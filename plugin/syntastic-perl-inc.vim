@@ -30,7 +30,12 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
-command! SyntasticLoadLocalPerlModules call syntastic_perl_inc#resolve_local_paths()
+function! s:call_test()
+    call perlinc#resolve_local_paths()
+endfunction
+
+command! SyntasticLoadLocalPerlModules call s:call_test()
+
 
 
 let &cpo = s:save_cpo

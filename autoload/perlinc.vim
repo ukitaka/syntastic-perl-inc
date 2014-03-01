@@ -56,10 +56,9 @@ function! s:uniq(list)
     return filter(copy(a:list), 'count(a:list, v:val) != 0')
 endfunction
 
-function! syntastic_perl_inc#resolve_local_paths()
+function! perlinc#resolve_local_paths()
     let project_root_path = s:get_root_directory(s:get_current_directory())
     let perl_lib_dirs = copy(s:perl_lib_dirs)
-    call extend(perl_lib_dirs, a:perl_paths)
     let inc_paths = s:uniq(map(perl_lib_dirs, 'simplify(project_root_path . "/" . v:val)'))
     let original_paths = split(&path, ',')
     call extend(inc_paths, original_paths)
