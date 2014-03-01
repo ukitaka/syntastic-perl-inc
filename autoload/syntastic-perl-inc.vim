@@ -25,4 +25,47 @@
 " Version: 1.0
 "=============================================================================
 
+scriptencoding utf-8
+
+let s:save_cpo = &cpo
+set cpo&vim
+
+let s:archname = unite#util#system('perl -MConfig -e '."'".'print $Config{archname}'."'")
+let s:perl_project_root_files = ['.git', '.gitmodules', 'Makefile.PL', 'Build.PL', 'Cpanfile', 'cpanfile']
+let s:perl_lib_dirs = ['lib', 'extlib', 'local/lib/perl5', 'local/lib/perl5/'.s:archname]
+
+function! s:get_current_directory()
+    return fnamemodify(getcwd(), ':p')
+    "return expand("%:p:h")
+endfunction
+
+function! s:get_root_directory(current_dir)
+    if a:current_dir ==# '/'
+        return ''
+    endif
+
+    for root_file in s:perl_project_root_files
+        if glob(a:current_dir . root_file) !=# ''
+            return a:current_dir
+        end
+    endfor
+    return s:get_root_directory([simplify(a:current_dir.'/../')], s:perl_project_root_files)
+endfunction
+
+function! s:uniq(list)
+    return filter(copy(a:list), 'count(a:list, v:val) != 0')
+endfunction
+
+function! syntastic_perl_inc#resolve_local_paths()
+    let project_root_path = s:get_root_directory(s:get_current_directory())
+    let perl_lib_dirs = copy(s:perl_lib_dirs)
+    call extend(perl_lib_dirs, a:perl_paths)
+    let inc_paths = s:uniq(map(perl_lib_dirs, 'simplify(project_root_path . "/" . v:val)'))
+    let original_paths = split(&path, ',')
+    call extend(inc_paths, original_paths)
+    let g:syntastic_perl_lib_path=inc_paths
+endfunction
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
 
